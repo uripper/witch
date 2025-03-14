@@ -51,12 +51,13 @@ Witch might output:
 Command not found. Did you mean:
 
 Suggested Command    | Location
--------------------------------------------------------------------------
+------------------------------------------------------------
 witch                            | /home/USER/.local/bin/witch
 which                            | /usr/bin/which
 watch                            | /usr/bin/watch
 
-
+(but it will render correctly)
+(maybe)
 ```
 
 This output helps you identify a close match with highlighted differences, making it easier to spot potential typos or variations.
