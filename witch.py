@@ -26,7 +26,8 @@ ANSI_MAGENTA: str = "\033[95m"
 ANSI_RESET: str = "\033[0m"
 
 # Regex pattern to remove ANSI escape codes.
-ANSI_ESCAPE_RE: re.Pattern = re.compile(r'\033\[[0-9;]*m')
+ANSI_ESCAPE_RE: re.Pattern = re.compile(r"\033\[[0-9;]*m")
+
 
 def strip_ansi(text: str) -> str:
     """
@@ -38,7 +39,8 @@ def strip_ansi(text: str) -> str:
     Returns:
         str: The text with ANSI escape codes removed.
     """
-    return ANSI_ESCAPE_RE.sub('', text)
+    return ANSI_ESCAPE_RE.sub("", text)
+
 
 def highlight_differences(input_word: str, suggestion: str) -> str:
     """
@@ -54,7 +56,9 @@ def highlight_differences(input_word: str, suggestion: str) -> str:
     Returns:
         str: The suggestion with ANSI color codes applied to differing parts.
     """
-    matcher: difflib.SequenceMatcher = difflib.SequenceMatcher(None, input_word, suggestion)
+    matcher: difflib.SequenceMatcher = difflib.SequenceMatcher(
+        None, input_word, suggestion
+    )
     highlighted: str = ""
 
     for tag, _i1, _i2, j1, j2 in matcher.get_opcodes():
@@ -66,6 +70,7 @@ def highlight_differences(input_word: str, suggestion: str) -> str:
             highlighted += f"{ANSI_MAGENTA}{suggestion[j1:j2]}{ANSI_RESET}"
 
     return highlighted
+
 
 def pad_string(text: str, width: int) -> str:
     """
@@ -83,6 +88,7 @@ def pad_string(text: str, width: int) -> str:
     visible_width: int = wcswidth(strip_ansi(text))
     return text + " " * (width - visible_width)
 
+
 def witch(command: str) -> Optional[str]:
     """
     Locate an executable in the system PATH or suggest close matches.
@@ -97,9 +103,7 @@ def witch(command: str) -> Optional[str]:
     Returns:
         Optional[str]: The path to the command if found; otherwise, None.
     """
-    # Try to locate the command normally.
-    path: Optional[str] = shutil.which(command)
-    if path:
+    if path := shutil.which(command):
         print(path)
         return path
 
@@ -107,26 +111,44 @@ def witch(command: str) -> Optional[str]:
     paths = os.environ.get("PATH", "").split(os.pathsep)
     executables = {f for p in paths if os.path.isdir(p) for f in os.listdir(p)}
 
-    matches = difflib.get_close_matches(command, executables, n=5, cutoff=0.4)
-    if matches:
-        print("\nCommand not found. Did you mean:\n")
-
-        # Define column widths.
-        cmd_width: int = 20
-        path_width: int = 50
-
-        # Print header.
-        print(f"{pad_string('Suggested Command', cmd_width)} | {pad_string('Location', path_width)}")
-        print("-" * (cmd_width + path_width + 3))
-
-        for match in matches:
-            highlighted_match: str = highlight_differences(command, match)
-            match_path: Optional[str] = shutil.which(match) or "(not found in PATH)"
-            print(f"{pad_string(highlighted_match, cmd_width)} | {pad_string(match_path, path_width)}")
+    if matches := difflib.get_close_matches(command, executables, n=5, cutoff=0.4):
+        print(f"\nCommand '{command}' not found. Close matches:\n")
+        print_suggestions_table(matches, command)
     else:
         print("Command not found and no close matches.")
 
     return None
+
+
+def print_suggestions_table(matches: list[str], command: str) -> None:
+    """
+    Display a formatted table of suggested commands and their locations in the system PATH.
+
+    This function prints a header row with column titles for the suggested command and its location,
+    followed by each suggestion with highlighted differences compared to the input command. If a suggestion
+    is not found in the PATH, it displays '(not found in PATH)'.
+
+    Args:
+        matches (list[str]): A list of suggested command names.
+        command (str): The original command provided by the user for comparison.
+    """
+    # Define column widths.
+    cmd_width: int = 20
+    path_width: int = 50
+
+    # Print header.
+    print(
+        f"{pad_string('Suggested Command', cmd_width)} | {pad_string('Location', path_width)}"
+    )
+    print("-" * (cmd_width + path_width + 3))
+
+    for match in matches:
+        highlighted_match: str = highlight_differences(command, match)
+        match_path: Optional[str] = shutil.which(match) or "(not found in PATH)"
+        print(
+            f"{pad_string(highlighted_match, cmd_width)} | {pad_string(match_path, path_width)}"
+        )
+
 
 def main() -> None:
     """
@@ -140,6 +162,7 @@ def main() -> None:
     parser.add_argument("command", help="The command to search for.")
     args: argparse.Namespace = parser.parse_args()
     witch(args.command)
+
 
 if __name__ == "__main__":
     main()
