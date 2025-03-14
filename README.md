@@ -17,7 +17,7 @@ Witch is a command-line utility that extends the functionality of the traditiona
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/witch.git
+   git clone https://github.com/uripper/witch.git
    cd witch
    ```
 
